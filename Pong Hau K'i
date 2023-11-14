@@ -1,0 +1,416 @@
+.data
+	boasvindas: .asciiz "Bem vindo ao jogo Pong Hau K'i\n"
+        instrucoes: .asciiz " O tabuleiro consiste em 5 vertices e 7 arestas. Cada jogador tem duas pecas.\n Os jogadores se revezam para se mover. A cada turno, o jogador move uma de suas duas pecas para o vertice vago adjacente.\n Se um jogador nao puder se mover, ele perde.\n Na hora de jogar, o jogador deve selecionar a peca a qual gostaria de movimentar para o espaco vago.\n Caso qualquer jogador realizar um movimento invalido, eh necessario reinicializar o programa.\n"
+	mensagem_o_vencedor:	.asciiz "\n\nO time \"O\" venceu!!!"
+	mensagem_x_vencedor:	.asciiz "\n\nO time \"X\" venceu!!!"	
+	mensagem_o_movimento:	.asciiz "\n Movimento para \"O\", escolha que posicao mover: "
+	mensagem_x_movimento:	.asciiz "\n Movimento para \"X\", escolha que posicao mover: "
+	mensagem_movimento_invalido:	.asciiz "\nMovimento invalido. Jogo encerrado.\n"
+	cabecalho_rodape:		.asciiz "====================\n"
+	nova_linha:	.asciiz "|\n"
+	nova_linha_espacos:	.asciiz "|    * |\n"
+	traco:	.asciiz	"| **** "
+	espacos:	.asciiz	"|      "
+	asterisco:	.asciiz	"|*   *       *   * "
+	asterisco_2:	.asciiz	"|*    *     *    * "
+	espaco:	.asciiz	"|*    "
+	epaco_vazio:	.asciiz	"|   "	
+	O_espaco:	.asciiz	"| O "
+	X_espaco:	.asciiz	"| X "
+	um_espaco:	.asciiz "|1"
+	dois_espacos:	.asciiz "|2"
+	tres_espacos:	.asciiz "|3"
+	quatro_espacos:	.asciiz "|4"
+	cinco_espacos:	.asciiz "|5"
+	
+
+.text
+
+  # Imprimir mensagem de boas-vindas
+    la $a0, boasvindas
+    li $v0, 4
+    syscall
+
+    # Imprimir instrucoes
+    la $a0, instrucoes 
+    li $v0, 4   
+    syscall
+
+	setup:
+		li	$s7, 0
+		li	$s4, 0
+		li	$s6, 1
+		li	$s3, 1
+		li	$s5, 2
+		jal	mostra_tabela
+		j	while_loop
+
+	while_loop:
+		jal	pergunta_0_move
+		jal	move_tabela
+		jal	mostra_tabela
+		jal	chagar_vitoria
+		jal	pergunta_1_move
+		jal	move_tabela
+		jal	mostra_tabela
+		jal	chagar_vitoria
+		j	while_loop
+
+	#Imprime a tabela com base nos registradores.
+	mostra_tabela:
+		move	$s1, $ra
+		jal	print_cabecalho_rodape
+
+		jal	print_s7
+		jal	print_espacos
+		jal	print_s4
+		jal	print_quebra_linha
+		
+		jal	print_asteriscos
+		jal	print_quebra_linha
+		
+		jal	print_asteriscos_2
+		jal	print_quebra_linha
+		
+		jal	print_espaco
+		jal	print_s5
+		jal	print_quebra_linha_espacos
+		
+		jal	print_asteriscos_2
+		jal	print_quebra_linha
+
+		jal	print_asteriscos
+		jal	print_quebra_linha
+
+		jal	print_s6
+		jal	print_traco
+		jal	print_s3
+		jal	print_quebra_linha
+
+		jal	print_cabecalho_rodape		
+		jr	$s1
+
+	#Altera a tabela com base no movimento do jogador.
+	move_tabela:
+		beq	$s0, 1, move_s7
+		beq	$s0, 2, move_s6
+		beq	$s0, 3, move_s5
+		beq	$s0, 4, move_s4
+		beq	$s0, 5, move_s3
+		j	movimento_invalido
+		#Verificando possibilidades de movimento para s7
+		move_s7:
+			beq	$s5, 2, s7_to_s5
+			beq	$s6, 2, s7_to_s6
+			j	movimento_invalido
+			s7_to_s5:
+				move	$s5, $s7
+				li	$s7, 2
+				jr	$ra
+			s7_to_s6:
+				move	$s6, $s7
+				li	$s7, 2
+				jr	$ra
+		#Verificando possibilidades de movimento para s6
+		move_s6:
+			beq	$s5, 2, s6_to_s5
+			beq	$s7, 2, s6_to_s7
+			beq	$s3, 2, s6_to_s3
+			j	movimento_invalido
+			s6_to_s7:
+				move	$s7, $s6
+				li	$s6, 2
+				jr	$ra
+			s6_to_s5:
+				move	$s5, $s6
+				li	$s6, 2
+				jr	$ra
+			s6_to_s3:
+				move	$s3, $s6
+				li	$s6, 2
+				jr	$ra
+		#Verificando possibilidades de movimento para s5
+		move_s5:
+			beq	$s7, 2, s5_to_s7
+			beq	$s6, 2, s5_to_s6
+			beq	$s4, 2, s5_to_s4
+			beq	$s3, 2, s5_to_s3
+			j	movimento_invalido
+			s5_to_s7:
+				move	$s7, $s5
+				li	$s5, 2
+				jr	$ra			
+			s5_to_s6:
+				move	$s6, $s5
+				li	$s5, 2
+				jr	$ra
+			s5_to_s4:
+				move	$s4, $s5
+				li	$s5, 2
+				jr	$ra
+			s5_to_s3:
+				move	$s3, $s5
+				li	$s5, 2
+				jr	$ra
+		#Verificando possibilidades de movimento para s4
+		move_s4:
+			beq	$s5, 2, s4_to_s5
+			beq	$s3, 2, s4_to_s3
+			j	movimento_invalido
+			s4_to_s5:
+				move	$s5, $s4
+				li	$s4, 2
+				jr	$ra			
+			s4_to_s3:
+				move	$s3, $s4
+				li	$s4, 2
+				jr	$ra
+		move_s3:
+			beq	$s4, 2, s3_to_s4
+			beq	$s5, 2, s3_to_s5
+			beq	$s6, 2, s3_to_s6
+			j	movimento_invalido
+			s3_to_s4:
+				move	$s4, $s3
+				li	$s3, 2
+				jr	$ra				
+			s3_to_s5:
+				move	$s5, $s3
+				li	$s3, 2
+				jr	$ra
+			s3_to_s6:
+				move	$s6, $s3
+				li	$s3, 2
+				jr	$ra								
+
+	#Verifica se o jogador ganhou.
+	chagar_vitoria:
+		beq	$s6, $s5, s6_eq_s5
+		beq	$s3, $s5, s3_eq_s5
+		jr	$ra
+		s6_eq_s5:
+			beq	$s7, 2, winner
+			jr	$ra
+		s3_eq_s5:
+			beq	$s4, 2, winner
+			jr	$ra
+		winner:
+			beqz	$s5, ganhador_0
+			j	ganhador_1			
+
+	pergunta_0_move:
+		#Printa a mensagem para pedir movimento.
+		la	$a0, mensagem_o_movimento
+		li	$v0, 4
+		syscall
+		#Realiza a leitura do movimento.
+		li	$v0, 5
+		syscall
+		move	$s0, $v0
+		#Validacao de pedido de movimento
+		beq	$s0, 1, O_pergunta_for_s7
+		beq	$s0, 2, O_pergunta_for_s6
+		beq	$s0, 3, O_pergunta_for_s5
+		beq	$s0, 4, O_pergunta_for_s4
+		beq	$s0, 5, O_pergunta_for_s3
+		O_pergunta_for_s7:
+			bnez	$s7, movimento_invalido
+			jr	$ra
+		O_pergunta_for_s6:
+			bnez	$s6, movimento_invalido
+			jr	$ra
+		O_pergunta_for_s5:
+			bnez	$s5, movimento_invalido			
+			jr	$ra
+		O_pergunta_for_s4:
+			bnez	$s4, movimento_invalido
+			jr	$ra
+		O_pergunta_for_s3:
+			bnez	$s3, movimento_invalido			
+			jr	$ra
+	pergunta_1_move:
+		#Printa a mensagem para pedir movimento.
+		la	$a0, mensagem_x_movimento
+		li	$v0, 4
+		syscall
+		#Realiza a leitura do movimento.
+		li	$v0, 5
+		syscall
+		#Validacao de pedido de movimento
+		move	$s0, $v0
+		beq	$s0, 1, X_pergunta_for_s7
+		beq	$s0, 2, X_pergunta_for_s6
+		beq	$s0, 3, X_pergunta_for_s5
+		beq	$s0, 4, X_pergunta_for_s4
+		beq	$s0, 5, X_pergunta_for_s3
+		X_pergunta_for_s7:
+			bne	$s7, 1, movimento_invalido
+			jr	$ra
+		X_pergunta_for_s6:
+			bne	$s6, 1, movimento_invalido
+			jr	$ra
+		X_pergunta_for_s5:
+			bne	$s5, 1, movimento_invalido			
+			jr	$ra
+		X_pergunta_for_s4:
+			bne	$s4, 1, movimento_invalido
+			jr	$ra
+		X_pergunta_for_s3:
+			bne	$s3, 1, movimento_invalido			
+			jr	$ra
+	ganhador_0:
+		#Printa a mensagem de vitoria e finaliza.
+		la	$a0, mensagem_o_vencedor
+		li	$v0, 4
+		syscall
+		j	exit
+	ganhador_1:
+		#Printa a mensagem de vitoria e finaliza.
+		la	$a0, mensagem_x_vencedor
+		li	$v0, 4
+		syscall
+		j	exit	
+	
+	movimento_invalido:
+		#Printa a mensagem de movimento invalido e finaliza
+		la	$a0, mensagem_movimento_invalido
+		li	$v0, 4
+		syscall
+		j	exit				
+		
+	exit:
+		#Carrega o codigo e finaliza.
+		li	$v0, 10
+		syscall
+
+	#Imprime uma nova linha.
+	print_quebra_linha:
+		la	$a0, nova_linha
+		j	print_return
+
+	#Imprime uma nova linha com espacos.
+	print_quebra_linha_espacos:
+		la	$a0, nova_linha_espacos
+		j	print_return
+		
+	#Imprime cabecalho_rodape.
+	print_cabecalho_rodape:
+		la	$a0, cabecalho_rodape
+		j	print_return
+
+	#Imprime um espaco tracejado.
+	print_traco:
+		la	$a0, traco
+		j	print_return
+
+	#Imprime astericos.
+	print_asteriscos:
+		la	$a0, asterisco
+		j	print_return
+
+	#Imprime asteriscos tipo 2.
+	print_asteriscos_2:
+		la	$a0, asterisco_2
+		j	print_return
+
+	#Imprime um espaco vazio.
+	print_espaco:
+		la	$a0, espaco
+		j	print_return
+
+	#Imprime espacos brancos.
+	print_espacos:
+		la	$a0, espacos
+		j	print_return
+
+	#Verifica o valor e imprime o espaco para s7
+	print_s7:
+		#Imprime o indicador da posicao.
+		la	$a0, um_espaco
+		li	$v0, 4
+		syscall
+		
+		beq	$s7, 1, s7_X
+		beqz	$s7, s7_O
+		la	$a0, epaco_vazio
+		j	print_return
+		s7_X:
+			la	$a0, X_espaco
+			j	print_return
+		s7_O:
+			la	$a0, O_espaco
+			j	print_return
+
+	#Verifica o valor e imprime o espaco para s6
+	print_s6:
+		#Imprime o indicador da posicao.
+		la	$a0, dois_espacos
+		li	$v0, 4
+		syscall	
+		beq	$s6, 1, s6_X
+		beqz	$s6, s6_O
+		la	$a0, epaco_vazio
+		j	print_return
+		s6_X:
+			la	$a0, X_espaco
+			j	print_return
+		s6_O:
+			la	$a0, O_espaco
+			j	print_return
+
+	#Verifica o valor e imprime o espaco para s5
+	print_s5:
+		#Imprime o indicador da posicao.
+		la	$a0, tres_espacos
+		li	$v0, 4
+		syscall
+		beq	$s5, 1, s5_X
+		beqz	$s5, s5_O
+		la	$a0, epaco_vazio
+		j	print_return
+		s5_X:
+			la	$a0, X_espaco
+			j	print_return
+		s5_O:
+			la	$a0, O_espaco
+			j	print_return
+
+	#Verifica o valor e imprime o espaco para s4
+	print_s4:
+		#Imprime o indicador da posicao.
+		la	$a0, quatro_espacos
+		li	$v0, 4
+		syscall
+		beq	$s4, 1, s4_X
+		beqz	$s4, s4_O
+		la	$a0, epaco_vazio
+		j	print_return
+		s4_X:
+			la	$a0, X_espaco
+			j	print_return
+		s4_O:
+			la	$a0, O_espaco
+			j	print_return
+
+	#Verifica o valor e imprime o espaco para s3
+	print_s3:
+		#Imprime o indicador da posicao.
+		la	$a0, cinco_espacos
+		li	$v0, 4
+		syscall	
+		beq	$s3, 1, s3_X
+		beqz	$s3, s3_O
+		la	$a0, epaco_vazio
+		j	print_return
+		s3_X:
+			la	$a0, X_espaco
+			j	print_return
+		s3_O:
+			la	$a0, O_espaco
+			j	print_return
+
+	#Imprime o que esta carregado no registrador $a0 e retorna para o registrador $ra
+	print_return:
+		li	$v0, 4
+		syscall
+		jr	$ra		
